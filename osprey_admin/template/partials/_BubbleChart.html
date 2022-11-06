@@ -1,0 +1,186 @@
+<html>
+{% load static %}
+    <head>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/d3/3.4.11/d3.min.js"></script>
+        <link rel="stylesheet" type = "text/css" href="{% static 'css/main.css' %}">
+    </head>
+
+    <body>
+            <div class="chart" style = "width: 100%; height: 100%; float: left; border-style: solid; border-width: 0.3px;"></div>
+    </body>
+    
+    <script>
+        // Generate random colors with hex codes 
+        function getRandomColor() {
+            var letters = '0123456789ABCDEF';
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 16)];
+            }
+            return color;
+        }
+
+        var height = window.innerHeight/2;
+        var width = window.innerWidth/3;
+
+        var margin = 40;
+        var data =[];
+        var color_arr = [];
+
+        // Define the div for the tooltip
+        var div = d3.select("body").append("div")	
+            .attr("class", "tooltip")				
+            .style("opacity", 0);
+
+        const dictionary_values = {{intertopic_distances|safe}};
+        
+        for(i=0; i < Object.keys(dictionary_values).length; i++){
+            color_arr.push(
+                getRandomColor());
+            data.push({
+                x: dictionary_values[i][1],
+                y: dictionary_values[i][2],
+                c: color_arr[i], 
+                size: dictionary_values[i][0],
+                });
+            }
+
+        var svg = d3.select('.chart')
+                            .append('svg')
+                            .attr('class', 'chart')
+                            .attr("width", width + margin + margin)
+                            .attr("height", height + margin + margin)
+                            .append("g")
+                            .attr("transform", "translate(" + margin + "," + margin + ")");
+                            
+        var x = d3.scale.linear()
+                                        .domain([d3.min(data, function (d) { return d.x; }), d3.max(data, function (d) { return d.x; })])
+                                        .range([0, width]);
+
+        var y = d3.scale.linear()
+                                        .domain([d3.min(data, function (d) { return d.y; }), d3.max(data, function (d) { return d.y; })])
+                                        .range([height, 0]);
+
+        var scale = d3.scale.sqrt()
+                                        .domain([d3.min(data, function (d) { return d.size; }), d3.max(data, function (d) { return d.size; })])
+                                        .range([1, 20]);
+
+        var opacity = d3.scale.sqrt()
+                                        .domain([d3.min(data, function (d) { return d.size; }), d3.max(data, function (d) { return d.size; })])
+                                        .range([1, .5]);
+                                        
+        var color = d3.scale.category10();
+        
+        // // Show axes
+        // var xAxis = d3.svg
+        //                                 .axis()
+        //                                 .scale(x)
+        //                                 .tickValues([]);
+        // var yAxis = d3.svg
+        //                                 .axis()
+        //                                 .scale(y)
+        //                                 .orient("left")
+        //                                 .tickValues([]);
+        
+        // svg.append("g")
+        //                             .attr("class", "y axis")
+        //                             .call(yAxis)
+        //                             .append("text")
+        //                                 .attr("transform", "rotate(-90)")
+        //                                 .attr("x", 20)
+        //                                 .attr("y", - margin)
+        //                                 .attr("dy", ".71em")
+        //                                 .style("text-anchor", "end");
+        // // x axis and label
+        // svg.append("g")
+        //                             .attr("class", "x axis")
+        //                             .attr("transform", "translate(0," + height + ")")
+        //                             .call(xAxis) 
+        //                             .append("text")
+        //                                 .attr("x", width + 20)
+        //                                 .attr("y", margin - 10)
+        //                                 .attr("dy", ".71em")
+        //                                 .style("text-anchor", "end");
+        
+        svg.selectAll("circle")
+                                    .data(data)
+                                    .enter()
+                                    .insert("circle")
+                                    .attr("cx", width / 2)
+                                    .attr("cy", height / 2)
+                                    .attr("opacity", function (d) { return opacity(d.size); })
+                                    .attr("r", function (d) { return scale(d.size); })
+                                    .style("fill", function (d) { return color(d.c); }) // The fill color
+                                    .on('mouseover', function (d, i) {
+                                        div .transition()		
+                                            .duration(200)		
+                                            .style("opacity", .9);		
+                                        div	.html("Topic " + i + ": " + {{top_topic_words|safe}}[i])	
+                                            .style("left", (d3.event.pageX) + "px")		
+                                            .style("top", (d3.event.pageY - 28) + "px");	
+                                        fade(d.c, .1);
+                                        d3.select(this).style("cursor", "pointer")
+                                    })
+                                    .on("mouseout", function(d) {		
+                                        div.transition()		
+                                            .duration(500)		
+                                            .style("opacity", 0);	
+                                        if (!d3.select(this).classed("selected") ){
+                                        fadeOut();}
+                                    })
+                                    .on('click', function(d, i){
+                                        updateChart_TFIDF(i, color(d.c));
+                                        updateChart_Freq(i, color(d.c));
+                                        updateChart_BIGRAM(i, color(d.c));
+                                        document.getElementById("freq_item").innerHTML = i; 
+                                        document.getElementById("bigram_item").innerHTML = i; 
+                                        document.getElementById("tfidf_item").innerHTML = i; 
+
+                                        if (!d3.select(this).classed("selected") ){
+                                            d3.select(this).classed("selected", true)
+                                            fade(d.c, .1);
+                                        } else{
+                                            d3.select(this).classed("selected", false);
+                                            fadeOut();
+                                        }
+                                    })
+                                    .transition()
+                                    .delay(function (d, i) { return x(d.x) - y(d.y); })
+                                    .duration(500)
+                                    .attr("cx", function (d) { return x(d.x); })
+                                    .attr("cy", function (d) { return y(d.y); })
+                                    .ease("bounce");
+                                    
+                                    
+        function fade(c, opacity) {
+                                    svg.selectAll("circle")
+                                        .filter(function (d) {
+                                            return d.c != c;
+                                        })
+                                        .transition()
+                                        .style("opacity", opacity);
+                                }
+
+                                function fadeOut() {
+                                    svg.selectAll("circle")
+                                    .transition()
+                                        .style("opacity", function (d) { opacity(d.size); });
+                                }
+    </script>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

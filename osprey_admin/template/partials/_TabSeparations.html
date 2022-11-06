@@ -1,0 +1,214 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<body>
+  <div class="container">
+
+    <!-- Nav tabs -->
+    <ul class="nav nav-tabs">
+    <li class="nav-item"> 
+      <a style = "color:#223843" class="nav-link active" data-toggle="tab" href="#home">
+        Word Frequencies
+      </a> 
+    </li>
+
+    <li class="nav-item"> 
+      <a style = "color:#223843" class="nav-link" data-toggle="tab" href="#menu1">
+        TF-IDF
+        <div class = "help-tip" style = "overflow: visible;float: right; margin-left: 10px">
+          <p>
+            Term Frequency - Inverse Document Frequency, shows the most distinct words for each of the topics (modularity class) after the dataset (corpus) jas been stemmed (root word) and stopwords removed.
+          </p>
+        </div> 
+      </a> 
+    </li>
+
+    <li class="nav-item"> 
+      <a style = "color:#223843" class="nav-link" data-toggle="tab" href="#menu2">
+        Bi-Gram 
+        <div class = "help-tip" style = "overflow: visible;float: right; margin-left: 10px">
+          <p>
+            The two most commonly reoccuring words within each topic (modularity class) after the dataset (corpus) has been stemmed (root word) and stopwords removed.
+          </p>
+        </div> 
+      </a>
+    </li>
+    </ul>
+
+    <!-- Dynamic Numbers -->
+
+    <!-- Tab panes -->
+    <div class="tab-content" style = "padding-top: 12px;">
+      <div class="tab-pane container active" id="home"> 
+        <span> Top 50 Words by Frequency in Topic <label id = freq_item> 0 </label> </span>
+        <canvas id="FreqChart" style = "width: 300px; height: 650px;"></canvas> 
+      </div>
+      <div class="tab-pane container fade" id="menu1"> 
+        <span> Top 50 TF-IDF Terms by Score in Topic <label id = tfidf_item> 0 </label></span>
+        <canvas id="TFIDFChart" style = "width: 300px; height: 650px;"></canvas> 
+      </div>
+      <div class="tab-pane container fade" id="menu2">
+        <span> Top 50 Bi-Grams by Frequency in Topic <label id = bigram_item> 0 </label></span>
+        <canvas id="BIGRAMChart" style = "width: 300px; height: 650px;"></canvas> 
+      </div>
+    </div>
+
+  </div>
+
+</body>
+
+
+
+
+<!-- -------------------------------------------------------- CHARTS -------------------------------------------------------------- -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+
+  const freqchart_options = {
+      legend: {display: false},
+      indexAxis: "y",
+      elements: {rectangle: {borderSkipped: 'left',}},
+      scales: {xAxes: [{gridLines: false}],
+      yAxes: [{gridLines: false,}]}
+      }
+
+  // Create a new canvas chart 
+  // var ctx_1 = document.getElementById('FreqChart').getContext('2d');
+  // Here we pull and initialise the data 
+  var data0 = {{alltopwords|safe}};
+  var labels0 = {{alltopwordslabels|safe}};
+  var data1 = {{topwords_data|safe}}[0];
+
+  const config = {
+      type: 'bar',
+      data: {
+          labels: labels0,
+          datasets: [{
+              label: 'Entire Corpus',
+              backgroundColor: '#FF5028',
+              borderColor: '#FF5028',
+              data: data0
+          },
+      {
+              label: 'Topic 0',
+              backgroundColor: '#d8b4a0',
+              borderColor: '#d8b4a0',
+              data: data1
+      }]
+      },
+      // Chart options
+  options: freqchart_options
+  }
+
+  // Create a new chart on the canvas 
+  var freqchart = new Chart(document.getElementById('FreqChart'), config);
+
+  function updateChart_Freq(indexvalue, hexcode) {
+    freqchart.data.datasets[1].data = {{topwords_data|safe}}[indexvalue];
+    freqchart.data.datasets[1].label = 'Topic'.concat(indexvalue);
+    freqchart.data.datasets[1].backgroundColor = hexcode;
+    freqchart.data.datasets[1].borderColor = hexcode;
+    freqchart.options = freqchart_options;
+    freqchart.update();
+  }
+
+</script>
+
+
+
+
+<!-- TF-IDF Chart Creation -->
+
+<script>
+
+  const tfidf_options = {
+      legend: {display: false},
+      indexAxis: "y",
+      elements: {rectangle: {borderSkipped: 'left',}},
+      scales: {xAxes: [{gridLines: false}],
+              yAxes: [{gridLines: false,}]}
+      }
+
+  // Create a new canvas chart 
+  var ctx_0 = document.getElementById('TFIDFChart').getContext('2d');
+  // Here we pull the data 
+  var data = {{tfidf_data|safe}}[0];
+  var labels = {{tfidf_label|safe}}[0];
+  // Create a new chart on the canvas 
+  var tfidf_chart = new Chart(ctx_0, {
+      type: 'bar',
+      data: {
+          labels: labels,
+          datasets: [{
+              label: 'Modularity Class 0',
+              backgroundColor: '#d77a61',
+              borderColor: '#d77a61',
+              data: data
+          }]
+      },
+      // Chart options
+      options: tfidf_options
+  });
+
+  function updateChart_TFIDF(indexvalue, hexcode) {
+    tfidf_chart.data.datasets[0].data = {{tfidf_data|safe}}[indexvalue];
+    tfidf_chart.data.labels = {{tfidf_label|safe}}[indexvalue];
+    tfidf_chart.data.datasets[0].label = 'Modularity Class '.concat(indexvalue);
+    tfidf_chart.data.datasets[0].backgroundColor = hexcode;
+    tfidf_chart.data.datasets[0].borderColor = hexcode;
+    tfidf_chart.options = tfidf_options;
+    tfidf_chart.update();
+  }
+
+</script>
+
+
+<!-- Bi-Gram Chart Creation -->
+
+<script>  
+  var activities = document.getElementById("mod_class");
+
+  const bigram_options = {
+      legend: {display: false},
+      indexAxis: "y",
+      elements: {rectangle: {borderSkipped: 'left',}},
+      scales: {xAxes: [{gridLines: false}],
+      yAxes: [{gridLines: false,}]}
+      }
+
+  // Create a new canvas chart 
+  var ctx_2 = document.getElementById('BIGRAMChart').getContext('2d');
+  // Here we pull the data 
+  var bigram_data = {{bigrams_data|safe}}[0];
+  var bigram_labels = {{bigrams_label|safe}}[0];
+  // Create a new chart on the canvas 
+  var bigram_chart = new Chart(ctx_2, {
+      type: 'bar',
+      data: {
+          labels: bigram_labels,
+          datasets: [{
+              label: 'Modularity Class 0',
+              backgroundColor: '#d77a61',
+              borderColor: '#d77a61',
+              data: bigram_data
+          }]
+      },
+      // Chart options
+      options: bigram_options
+  });
+
+  function updateChart_BIGRAM(indexvalue, hexcode) {
+    bigram_chart.data.datasets[0].data = {{bigrams_data|safe}}[indexvalue];
+    bigram_chart.data.labels = {{bigrams_label|safe}}[indexvalue];
+    bigram_chart.data.datasets[0].label = 'Modularity Class '.concat(indexvalue);
+    bigram_chart.data.datasets[0].backgroundColor = hexcode;
+    bigram_chart.data.datasets[0].borderColor = hexcode;
+    bigram_chart.options = bigram_options;
+    bigram_chart.update();
+  }
+
+</script>
+
+

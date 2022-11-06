@@ -1,0 +1,51 @@
+image: alpine:latest
+
+
+.auto-deploy:
+  image: "registry.gitlab.com/gitlab-org/cluster-integration/auto-deploy-image:v2.11.0"
+
+.only: &restrictions
+  - master
+  - tags
+
+
+build:
+  stage: build
+  only: *restrictions
+  image: docker:19-dind
+  services:
+    - docker:19-dind
+  environment:
+    name: osprey
+  variables:
+    IMAGE_OSPREY: '$CI_REGISTRY_IMAGE/osprey:$CI_COMMIT_SHA'
+    IMAGE_OSPREY_LATEST: '$CI_REGISTRY_IMAGE/osprey:latest'
+  script:
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - docker build --tag $IMAGE_OSPREY --tag $IMAGE_OSPREY_LATEST .
+    - docker push $IMAGE_OSPREY
+    - docker push $IMAGE_OSPREY_LATEST
+
+deploy:
+  stage: deploy
+  only: *restrictions
+  extends: .auto-deploy
+  allow_failure: false
+  variables:
+    ROLLOUT_RESOURCE_TYPE: deployment
+  environment:
+    name: osprey
+    url: https://osprey.diet.synthesis.partners
+  artifacts:
+    paths: [environment_url.txt]
+  script:
+    - auto-deploy check_kube_domain
+    - auto-deploy download_chart
+    - auto-deploy ensure_namespace
+    - auto-deploy create_secret
+    - auto-deploy deploy
+    - auto-deploy delete canary
+    - auto-deploy delete rollout
+    - auto-deploy persist_environment_url
+  when: manual
+  needs: ["build"]

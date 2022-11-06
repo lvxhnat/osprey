@@ -1,0 +1,119 @@
+.selectFile {
+    padding:5px 10px;
+    background:#FFDDC1;
+    border:1px solid #FFDDC1;
+    position:relative;
+    color: black;
+    font-weight: bold;
+    border-radius:2px;
+    font-family: sans-serif;
+    text-align:center;
+    cursor:pointer;
+}
+
+.hide_file {
+    position: absolute;
+    z-index: 1000;
+    opacity: 0;
+    cursor: pointer;
+    right: 0;
+    top: 0;
+    height: 100%;
+    font-size: 24px;
+    width: 100%;
+}
+
+.firstColumnName {
+    padding-top: 10px;
+}
+
+.slidecontainer {
+    width: 100%;
+  }
+
+.slider {
+-webkit-appearance: none;
+width: 100%;
+height: 5px;
+border-radius: 1px;
+background: #fff;
+outline: none;
+opacity: 0.7;
+-webkit-transition: .2s;
+transition: opacity .2s;
+}
+
+.slider:hover {
+opacity: 1;
+}
+
+.slider::-webkit-slider-thumb {
+-webkit-appearance: none;
+appearance: none;
+width: 25px;
+height: 25px;
+border-radius: 50%;
+background: #FFBBAB;
+cursor: pointer;
+}
+
+.slider::-moz-range-thumb {
+width: 25px;
+height: 25px;
+border-radius: 50%;
+background: #FFBBAB;
+cursor: pointer;
+}
+
+input[type=text], select {
+    width: 100%;
+    height: 30px;
+    border: none;
+    margin-top: -30px;
+}
+
+.inputNames {
+    float:left;
+    padding-top: 15px; 
+    font-weight: bold;
+}
+
+.downloadFile {
+    float:right; 
+    height:30px; 
+    width:90px
+}
+
+.form-label {
+    font-weight: bold; 
+}
+
+.runModel {
+    width: 100%;
+    font-weight: bold; 
+    padding-top: 5px;
+    padding-bottom: 5px;
+    background: #fff;
+    fill: #fff; 
+    border: none;
+}
+
+.performance {
+    padding-top: 50px;
+    text-align: center
+}
+
+.modelPerformance {
+    text-align: center;
+    font-weight: bold;
+}
+
+.download {
+    background-color: #FFDDC1; 
+    padding-top: 5px;
+    padding-bottom: 5px;
+    width: 100%;
+    border: none;
+    font-family: sans-serif;
+    font-weight: bold;
+}

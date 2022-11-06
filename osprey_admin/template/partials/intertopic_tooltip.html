@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+{% load static %}
+
+<head>
+    <link rel="stylesheet" href="{% static 'css/main.css' %}">
+</head>
+
+<div class="help-tip" style = "float: left; overflow: visible;">
+    <p style = "overflow: visible;">
+        The inter topic distance here is calculated to display how distinct the different topics are. 
+        Circles that are further away from each other indicate more distinct topics. <br>
+        <br>
+        The size of the circles are calculated based on the number of documents in each topic.
+        Larger circles indicate a larger prevalence of the topic within the dataset (Corpus).<br>
+        <br>
+        Intertopic Distances are calculated using the Jenson-Shannon Divergence
+        <a href = "https://research-repository.st-andrews.ac.uk/bitstream/handle/10023/1591/Endres2003-IEEETransInfTheory49-NewMetric.pdf;jsessionid=90CE76AB3BAA7256FC863BD493D8290F?sequence=1">
+            <sup>[1]</sup>
+        </a>
+    </p>
+</div>
